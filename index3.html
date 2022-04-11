@@ -1,0 +1,88 @@
+<!doctype html>
+
+
+<head>
+  <script>
+
+    function doIt() {
+
+
+      const AudioContext = window.AudioContext;
+      const audioContext = new AudioContext();
+      var microphone;
+
+
+      var source;
+
+
+      const playButton = document.getElementById('but1');
+
+
+      if (navigator.mediaDevices) {
+        navigator.mediaDevices.getUserMedia({"audio": true}).then(
+          (stream) => {
+            microphone = audioContext.createMediaStreamSource(stream);
+            // `microphone` can now act like any other AudioNode
+            //microphone.connect(gainNode).connect(audioContext.destination);
+
+
+            async function demoCode(context) {
+              await context.audioWorklet.addModule('bypass-processor.js');
+              const oscillator = new OscillatorNode(context);
+              oscillator.connect(context.destination);
+              //oscillator.start();
+
+              const bypasser = new AudioWorkletNode(context, 'bypass-processor');
+              microphone.connect(bypasser).connect(context.destination);
+            };//end of demoCode.
+
+
+            demoCode(audioContext);// actually do above..
+          }
+        ).catch((err) => {
+          // browser unable to access microphone
+          // (check to see if microphone is attached)
+        });
+      } else {
+        // browser unable to access media devices
+        // (update your browser)
+      }
+
+    }
+
+    /*
+           playButton.addEventListener('click', function () {
+
+          // check if context is in suspended state (autoplay policy)
+          if (audioContext.state === 'suspended') {
+            audioContext.resume();
+          }
+
+          // play or pause track depending on state
+          if (this.dataset.playing === 'false') {
+            source.start();// audioEl1.play();
+            this.dataset.playing = 'true';
+          } else if (this.dataset.playing === 'true') {
+            source.stop();//audioEl1.pause();
+            this.dataset.playing = 'false';
+          }
+        }, false);
+
+        }// end of  function doIt()
+    */
+    //--------
+
+    //------------
+
+    //lastly set up button to play back the short stretch of recorded sound (around 0.5 secs)
+
+  </script>
+</head>
+
+<body onload="doIt()">
+
+
+<button id="but1" data-playing="false" role="switch" aria-checked="false">
+  <span>Play/Pause</span>
+</button>
+</body>

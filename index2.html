@@ -1,0 +1,99 @@
+<!doctype html>
+
+
+<head>
+  <script>
+
+    function doIt() {
+
+
+      const AudioContext = window.AudioContext;
+      const audioContext = new AudioContext();
+      var microphone;
+      const Pi2 = Math.PI * 2;
+
+      var source;
+      var myArrayBuffer;
+      var nowBuffering;
+
+      const playButton = document.getElementById('but1');
+
+      var analyser = audioContext.createAnalyser();
+      analyser.fftSize = 32768; // biggest allowed
+      var dataArray = new Float32Array(32768);
+
+      if (navigator.mediaDevices) {
+        navigator.mediaDevices.getUserMedia({"audio": true}).then(
+          (stream) => {
+            // microphone = audioContext.createMediaStreamSource(stream);
+            // `microphone` can now act like any other AudioNode
+            //microphone.connect(gainNode).connect(audioContext.destination);
+            microphone = audioContext.createMediaStreamSource(stream);
+            microphone.connect(analyser);
+            setTimeout(callForData,2000);
+          }
+        ).catch((err) => {
+          // browser unable to access microphone
+          // (check to see if microphone is attached)
+        });
+      } else {
+        // browser unable to access media devices
+        // (update your browser)
+      }
+      function callForData() {
+88
+      analyser.getFloatTimeDomainData(dataArray);
+      myArrayBuffer = audioContext.createBuffer(1, audioContext.sampleRate * 0.5, audioContext.sampleRate);
+      nowBuffering = myArrayBuffer.getChannelData(0);
+      for (var i = 0; i < myArrayBuffer.length; i++) {
+
+
+        nowBuffering[i] = 10 * dataArray[i];
+
+      }
+
+      source = audioContext.createBufferSource();
+
+// set the buffer in the AudioBufferSourceNode
+      source.buffer = myArrayBuffer;
+
+// connect the AudioBufferSourceNode to the
+// destination so we can hear the sound
+      source.connect(audioContext.destination);
+    }
+
+       playButton.addEventListener('click', function () {
+
+      // check if context is in suspended state (autoplay policy)
+      if (audioContext.state === 'suspended') {
+        audioContext.resume();
+      }
+
+      // play or pause track depending on state
+      if (this.dataset.playing === 'false') {
+        source.start();// audioEl1.play();
+        this.dataset.playing = 'true';
+      } else if (this.dataset.playing === 'true') {
+        source.stop();//audioEl1.pause();
+        this.dataset.playing = 'false';
+      }
+    }, false);
+
+    }// end of  function doIt()
+
+    //--------
+
+    //------------
+
+    //lastly set up button to play back the short stretch of recorded sound (around 0.5 secs)
+
+  </script>
+</head>
+
+<body onload="doIt()">
+
+
+<button id="but1" data-playing="false" role="switch" aria-checked="false">
+  <span>Play/Pause</span>
+</button>
+</body>

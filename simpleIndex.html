@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+
+    <script>
+var bypasser;
+
+function doStuff(){
+  //alert("starting");
+  const AudioContext = window.AudioContext;
+      const context = new AudioContext();
+      demoCode(context);
+
+       async function demoCode(context){
+        await context.audioWorklet.addModule('bypass-processor.js');
+        const oscillator = new OscillatorNode(context);
+         bypasser = new AudioWorkletNode(context, 'bypass-processor');
+        oscillator.connect(bypasser).connect(context.destination);
+        oscillator.start();
+        //let nodeM = new AudioWorkletNode(context, 'port-processor');
+  bypasser.port.onmessage = (event) => {
+    alert(event.data);
+    bypasser.port.postMessage('Hello!');
+
+  };
+
+
+
+        //setTimeout(pausing,5000);
+      };
+
+
+
+     // WorkletDemoBuilder(PageData, demoCode);
+}
+    </script>
+
+
+
+  </head>
+  <body onload="doStuff()">
+
+
+  <button onclick="doStuff()">run</button>
+  </body>
+</html>

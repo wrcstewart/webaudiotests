@@ -1,0 +1,252 @@
+<!doctype html>
+
+
+<head>
+  <script>
+
+    function doIt() {
+
+
+      const AudioContext = window.AudioContext;
+      const audioContext = new AudioContext();
+      var microphone;
+      const Pi2 = Math.PI *2;
+
+      var source;
+      var myArrayBuffer;
+      var nowBuffering;
+
+      var chunks =[];
+      var arrayDest = audioContext.createMediaStreamDestination();
+      var mediaRecorder = new MediaRecorder(arrayDest.stream);
+
+      mediaRecorder.ondataavailable = function(evt) {
+        chunks.push(evt.data);
+        let dummyForBreakpoint = 4;
+      }
+
+function stoppingRecorder(){
+
+        mediaRecorder.requestData();
+        mediaRecorder.stop();
+}
+
+
+
+      const audioEl1 = document.getElementById("audio1Id");
+      const playButton = document.getElementById('but1');
+      const volumeControl = document.querySelector('#volume');
+      const pannerControl = document.querySelector('#pannerId');
+      const pannerControl2 = document.querySelector('#panner2Id');
+      const freqDiffControl = document.querySelector('#freqDiffId');
+      const freqDiffLabel = document.querySelector('#freqDiffLabelId');
+
+
+      const track1 = audioContext.createMediaElementSource(audioEl1);
+      const gainNode = audioContext.createGain();
+      const panner = audioContext.createStereoPanner();
+      const panner2 = audioContext.createStereoPanner();
+
+      const osc = audioContext.createOscillator();
+      osc.type = 'triangle';
+      osc.frequency.setValueAtTime(400, audioContext.currentTime);
+      //osc.connect(panner).connect(audioContext.destination);
+      //osc.start();
+
+      const osc2 = audioContext.createOscillator();
+      osc2.type = 'triangle';
+      osc2.frequency.setValueAtTime(400, audioContext.currentTime);
+      //osc2.connect(panner2).connect(audioContext.destination);
+      // osc2.start();
+
+      var analyser = audioContext.createAnalyser();
+      analyser.fftSize = 32768;
+      var bufferLength = analyser.fftSize;
+      var dataArray = new Float32Array(600000);
+
+
+
+
+/*
+
+
+      var myArrayBuffer = audioContext.createBuffer(1, audioContext.sampleRate * 3, audioContext.sampleRate);
+var nowBuffering = myArrayBuffer.getChannelData(0);
+
+for (var i = 0; i < myArrayBuffer.length; i++) {
+    // Math.random() is in [0; 1.0]
+    // audio needs to be in [-1.0; 1.0]
+  let sRate = audioContext.sampleRate;
+    nowBuffering[i] = dataArray[i];
+
+      //sinLookUp(i,440,sRate);//Math.random() * 2 - 1;
+  }
+
+var source = audioContext.createBufferSource();
+
+// set the buffer in the AudioBufferSourceNode
+source.buffer = myArrayBuffer;
+
+// connect the AudioBufferSourceNode to the
+// destination so we can hear the sound
+source.connect(audioContext.destination);
+
+*/
+
+
+// start the source playing
+//source.start();
+
+
+      //const pannerOptions = {pan: 0};
+      //const panner = new StereoPannerNode(audioContext, pannerOptions);
+
+
+      //track1.connect(gainNode).connect(panner).connect(audioContext.destination);
+      // track1.connect(gainNode).connect(panner2).connect(audioContext.destination);
+      //microphone.connect(gainNode).connect(audioContext.destination);
+
+      if (navigator.mediaDevices) {
+        navigator.mediaDevices.getUserMedia({"audio": true}).then(
+          (stream) => {
+            // microphone = audioContext.createMediaStreamSource(stream);
+            // `microphone` can now act like any other AudioNode
+            //microphone.connect(gainNode).connect(audioContext.destination);
+            processMike(stream);
+
+          }
+        ).catch((err) => {
+          // browser unable to access microphone
+          // (check to see if microphone is attached)
+        });
+      } else {
+        // browser unable to access media devices
+        // (update your browser)
+      }
+
+function callForData(){
+  analyser.getFloatTimeDomainData(dataArray);
+      myArrayBuffer = audioContext.createBuffer(1, audioContext.sampleRate * 12 , audioContext.sampleRate);
+nowBuffering = myArrayBuffer.getChannelData(0);
+
+
+
+
+
+for (var i = 0; i < myArrayBuffer.length; i++) {
+    // Math.random() is in [0; 1.0]
+    // audio needs to be in [-1.0; 1.0]
+  let sRate = audioContext.sampleRate;
+    nowBuffering[i] = dataArray[i];
+
+      //sinLookUp(i,440,sRate);//Math.random() * 2 - 1;
+  }
+
+ source = audioContext.createBufferSource();
+
+// set the buffer in the AudioBufferSourceNode
+source.buffer = myArrayBuffer;
+
+// connect the AudioBufferSourceNode to the
+// destination so we can hear the sound
+source.connect(audioContext.destination);
+}
+
+      function processMike(stream) {
+
+        microphone = audioContext.createMediaStreamSource(stream);
+        microphone.connect(analyser);
+        microphone.connect(arrayDest);
+        mediaRecorder.start();
+        // `microphone` can now act like any other AudioNode
+
+        // ******* during other testing not using mic******
+      //analyser.connect(gainNode).connect(audioContext.destination);
+//setTimeout(callForData,2000);
+setTimeout(stoppingRecorder,6000);
+
+
+      }
+
+      function sinLookUp(i,freq,sRate){
+        return (Math.sin( (Pi2 * i * freq)/ sRate));
+      }
+
+//------------------
+      playButton.addEventListener('click', function () {
+
+        // check if context is in suspended state (autoplay policy)
+        if (audioContext.state === 'suspended') {
+          audioContext.resume();
+        }
+
+        // play or pause track depending on state
+        if (this.dataset.playing === 'false') {
+         source.start();// audioEl1.play();
+          this.dataset.playing = 'true';
+        } else if (this.dataset.playing === 'true') {
+          source.stop();//audioEl1.pause();
+          this.dataset.playing = 'false';
+        }
+
+      }, false);
+//-------------
+
+     // source.addEventListener('ended', () => {
+       // playButton.dataset.playing = 'false';
+     // }, false);
+
+//-------------
+
+      volumeControl.addEventListener('input', function () {
+        gainNode.gain.value = this.value;
+
+      }, false);
+
+      //-------------
+
+      pannerControl.addEventListener('input', function () {
+        panner.pan.value = this.value;
+      }, false);
+
+      pannerControl2.addEventListener('input', function () {
+        panner2.pan.value = this.value;
+      }, false);
+
+      freqDiffControl.addEventListener('input', function () {
+        let addFreq = this.value;
+        let baseFreq = osc.frequency.value
+        let newFreq = baseFreq * 1 + addFreq * 1;// *1 converts string to number
+
+        osc2.frequency.setValueAtTime(newFreq, audioContext.currentTime);
+        freqDiffLabel.innerHTML = "" + addFreq;
+
+      }, false);
+
+      //---------
+
+    }// end DoIt
+
+
+  </script>
+</head>
+
+<body onload="doIt()">
+
+
+<audio src="A1.mp3" id="audio1Id"></audio>
+
+<button id="but1" data-playing="false" role="switch" aria-checked="false">
+  <span>Play/Pause</span>
+</button>
+
+<input type="range" id="volume" min="0" max="2" value="1" step="0.01">
+
+<input type="range" id="pannerId" min="-1" max="1" value="0" step="0.01">
+<input type="range" id="panner2Id" min="-1" max="1" value="0" step="0.01">
+<input type="range" id="freqDiffId" min="0" max="20" value=0 step="0.04">
+<label id="freqDiffLabelId">0</label>
+
+</body>
+
+</html>
