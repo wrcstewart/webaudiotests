@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+
+<script>
+
+
+ function onLoad(){
+
+   const playButton = document.querySelector('button');
+   //const audioElement = document.querySelector('audio');
+   //audioElement.currentTime = 15.0;
+   const startControl = document.querySelector('#start');
+
+const AudioContext = window.AudioContext || window.webkitAudioContext;
+
+const audioContext = new AudioContext();
+
+//var mySource = "http://ice1.somafm.com/seventies-128-aac";
+//var mySource = "https://www.learningcontainer.com/wp-content/uploads/2020/02/Kalimba.mp3";
+var mySource = "https://upload.wikimedia.org/wikipedia/commons/1/1f/Bach_-_Brandenburg_Concerto.No.1_in_F_Major-_II._Adagio.ogg";
+
+
+
+
+var song = new Audio(mySource);
+//var songSource = audioContext.createMediaElementSource(song);
+//songSource.connect(audioContext.destination);
+   song.crossOrigin = "anonymous";
+playButton.addEventListener('click', function() {
+
+  var songSource = audioContext.createMediaElementSource(song);
+songSource.connect(audioContext.destination);
+
+    // check if context is in suspended state (autoplay policy)
+    if (audioContext.state === 'suspended') {
+        audioContext.resume();
+    }
+
+    // play or pause track depending on state
+    if (this.dataset.playing === 'false') {
+        //audioElement.play();
+      song.play()
+        this.dataset.playing = 'true';
+        this.innerHTML = "Pause"
+    } else if (this.dataset.playing === 'true') {
+       // audioElement.pause();
+      song.pause();
+        this.dataset.playing = 'false';
+        this.innerHTML = "Play";
+    }
+}, false);
+
+audioElement.addEventListener('ended', () => {
+    playButton.dataset.playing = 'false';
+}, false);
+
+ startControl.addEventListener('input', function () {
+       audioElement.currentTime = this.value;
+
+      }, false);
+
+ function createEl(parentEl,tag,id,innerText){
+
+   let el = document.createElement(tag);
+   el.id = id;
+   parentEl.append(el);
+   el.innerText =innerText;
+   return (el);
+
+ }
+ let div1 = document.getElementById("div1");
+let el1 = createEl(div1,"button","but1","press*********");
+
+// pass it into the audio context
+
+//var track = audioContext.createMediaElementSource(audioElement);
+//track.connect(audioContext.destination);
+
+ }
+</script>
+</head>
+
+<body onLoad ="onLoad()">
+
+<!--
+<audio controls>
+  <source
+ src="https://www.learningcontainer.com/wp-content/uploads/2020/02/Kalimba.mp3">
+
+</audio>
+-->
+
+<button data-playing="false" role="switch" aria-checked="false">
+    <span>Play</span>
+</button>
+<div id="div1"></div>
+<input type="range" id="start" min="0" max="20" value="0" step="0.1">
+</body>
