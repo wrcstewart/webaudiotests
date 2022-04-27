@@ -8,23 +8,36 @@
  * @class BypassProcessor
  * @extends AudioWorkletProcessor
  */
+// MODIFIED BY WS TO SLOW DOWN AN INPUT. ie expand in time.
+  // so output must progressively lag input.
 
 var record =[];
 var startInRecord =0;
 var startOutRecord =0;
-var flag1 = true;
+var recording = false;
+var playing = false;
+
 
 class BypassProcessor extends AudioWorkletProcessor {
 
   constructor() {
     super();
     this.port.onmessage = (event) => {
-      flag1 = true;
+      if(event.data == 'start_recording') {
+        recording = true;
+        let dummy = 8;
+      }
+      if(event.data == 'stop_recording') recording = false;
+      if(event.data == 'start_playing') {
+        playing = true;
+        let dummy =9;
+      }
+      if(event.data == 'stop_playing') playing = false;
        //Handling data from the node.
       //console.log(event.data);
     };
 
-    this.port.postMessage('Hi!');
+   // this.port.postMessage('Hi!');
   }
 
     // When constructor() undefined, the default constructor will be
@@ -44,13 +57,16 @@ class BypassProcessor extends AudioWorkletProcessor {
         // By default, the node has single input and output.
         const input = inputs[0][0];
         const output = outputs[0][0];
+if(recording) {
+  for (let i = 0; i < input.length; i++) {
 
-        for (let i = 0; i < input.length; i++) {
+    record[startInRecord] = input[i];
+    startInRecord++
+  }
+}
 
-            record[startInRecord] = input[i];
-            startInRecord++
-        }
-if (flag1) {
+
+if (playing) {
   for (let j = 0; j < output.length; j += 2) {
     output[j] = record[startOutRecord];
     output[j + 1] = output[j];
