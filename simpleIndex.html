@@ -23,24 +23,24 @@ function doStuff(){
     bypasser.port.postMessage('Hello!');
 
   };
+       };
 
 
 
-        //setTimeout(pausing,5000);
-      };
-
-
-
-     // WorkletDemoBuilder(PageData, demoCode);
 }
+
+
+
+
     </script>
 
 
 
   </head>
   <body onload="doStuff()">
-
-
   <button onclick="doStuff()">run</button>
+  <button id="but1" data-playing="false" role="switch" aria-checked="false">
+  <span>Start/Stop Record</span>
+</button>
   </body>
 </html>

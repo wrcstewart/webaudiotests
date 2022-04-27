@@ -10,12 +10,14 @@
       const AudioContext = window.AudioContext;
       const audioContext = new AudioContext();
       var microphone;
+      var bypasser;
 
 
       var source;
 
 
-      const playButton = document.getElementById('but1');
+      const recordButton = document.getElementById('but1');
+      const playButton = document.getElementById('but2');
 
 
       if (navigator.mediaDevices) {
@@ -32,7 +34,7 @@
               oscillator.connect(context.destination);
               //oscillator.start();
 
-              const bypasser = new AudioWorkletNode(context, 'bypass-processor');
+              bypasser = new AudioWorkletNode(context, 'bypass-processor');
               microphone.connect(bypasser).connect(context.destination);
             };//end of demoCode.
 
@@ -48,10 +50,29 @@
         // (update your browser)
       }
 
-    }
 
-    /*
-           playButton.addEventListener('click', function () {
+      recordButton.addEventListener('click', function () {
+
+          // check if context is in suspended state (autoplay policy)
+          if (audioContext.state === 'suspended') {
+            audioContext.resume();
+          }
+
+          // play or pause track depending on state
+          if (this.dataset.recording === 'false') {
+            //source.start();// audioEl1.play();
+            // send message to start recording
+            bypasser.port.postMessage('start_recording');
+            this.dataset.recording = 'true';
+          } else if (this.dataset.recording === 'true') {
+            //source.stop();//audioEl1.pause();
+            // send message to stop recording
+             bypasser.port.postMessage('stop_recording');
+            this.dataset.recording = 'false';
+          }
+        }, false);
+
+      playButton.addEventListener('click', function () {
 
           // check if context is in suspended state (autoplay policy)
           if (audioContext.state === 'suspended') {
@@ -60,21 +81,22 @@
 
           // play or pause track depending on state
           if (this.dataset.playing === 'false') {
-            source.start();// audioEl1.play();
+            //source.start();// audioEl1.play();
+            // send message to start recording
+            bypasser.port.postMessage('start_playing');
             this.dataset.playing = 'true';
           } else if (this.dataset.playing === 'true') {
-            source.stop();//audioEl1.pause();
+            //source.stop();//audioEl1.pause();
+            // send message to stop recording
+             bypasser.port.postMessage('stop_playing');
             this.dataset.playing = 'false';
           }
         }, false);
 
-        }// end of  function doIt()
-    */
-    //--------
+    }// end of doIt
 
-    //------------
 
-    //lastly set up button to play back the short stretch of recorded sound (around 0.5 secs)
+
 
   </script>
 </head>
@@ -82,7 +104,10 @@
 <body onload="doIt()">
 
 
-<button id="but1" data-playing="false" role="switch" aria-checked="false">
-  <span>Play/Pause</span>
+<button id="but1" data-recording="false" role="switch" aria-checked="false">
+  <span>Record Start/Stop</span>
+</button>
+<button id="but2" data-playing="false" role="switch" aria-checked="false">
+  <span>Play Start/Stop</span>
 </button>
 </body>
