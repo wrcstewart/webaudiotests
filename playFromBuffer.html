@@ -15,6 +15,7 @@
    const startControl = document.querySelector('#start');
 
 //*************************
+   var globalSample;
 const AudioContext = window.AudioContext || window.webkitAudioContext;
 const audioContext = new AudioContext();
 //var mySource = "http://ice1.somafm.com/seventies-128-aac";
@@ -27,6 +28,32 @@ var song = new Audio(mySource);
     var songSource = audioContext.createMediaElementSource(song);
 songSource.connect(audioContext.destination);
 
+async function getFile(audioContext,filepath){
+const response = await fetch(filepath);
+const arrayBuffer = await response.arrayBuffer();
+const audioBuffer = audioContext.decodeAudioData(arrayBuffer);
+return audioBuffer;
+}
+
+//var sample = getFile(audioContext,"Kalimba.mp3");
+
+  async function setupSample(){
+  const filePath = 'Kalimba.mp3';
+  const sample = await getFile(audioContext,filePath);
+  return sample;
+  }
+setupSample().then((sample)=> {globalSample = sample});
+
+function playSample(audioContext, audioBuffer, time) {
+  const sampleSource = audioContext.createBufferSource();
+  sampleSource.buffer = audioBuffer;
+  sampleSource.connect(audioContext.destination);
+  sampleSource.start(time);
+  return sampleSource;
+}
+
+
+
 //**************************
 playButton.addEventListener('click', function() {
   // check if context is in suspended state (autoplay policy)
@@ -36,7 +63,7 @@ playButton.addEventListener('click', function() {
   // play or pause track depending on state
     if (this.dataset.playing === 'false') {
         //audioElement.play();
-      song.play()
+      playSample(audioContext, globalSample, audioContext.currentTime)
         this.dataset.playing = 'true';
         this.innerHTML = "Pause"
     } else if (this.dataset.playing === 'true') {
